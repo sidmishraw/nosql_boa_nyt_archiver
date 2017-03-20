@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-03-16 10:47:22
+# @Last Modified time: 2017-03-19 21:32:01
 
 
 
@@ -90,23 +90,15 @@ def create_archives_dataset():
   Creates the archives dataset by 
   '''
 
-  warning('Getting connection to MongoDB')
   client = get_client()
-  warning('Got connection to MongoDB')
 
   # try building 2 collections for 2 months
   months = [4, 5]
 
   for month in months:
-    warning('Fetching archives from NYT for month {}'.format(month))
     archives = __archives_api__(month = month)
-    warning('Fetched archives from NYT for month {}'.format(month))
-    warning('Fetching database archives_2000 from mongodb')
     db = client.get_database('archives_2000')
-    warning('Fetched database archives_2000 from mongodb')
-    warning('Inserting documents into the collection month_{}'.format(month))
     db['month_{}'.format(month)].insert_many(archives)
-    warning('Inserted documents into the collection month_{}'.format(month))
     print('Created and inserted archives into month_{} collection..'.format(month))
 
 
@@ -117,4 +109,4 @@ if __name__ == '__main__':
   print('Testing pymongo and mongo connections and queries...')
   # db = client.get_database('usdata')
   # print('All the collections of `usdata` db : {}'.format(db.collection_names()))
-
+  
