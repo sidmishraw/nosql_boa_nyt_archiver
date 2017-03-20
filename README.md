@@ -18,7 +18,8 @@ Archives for years (2005-2007 and 2015-2017)
 
 The Archive API provides lists of NYT articles by month going back to 1851. We plan to build our dataset by calling the NYT Archives API for the years 2005-2007 and 2015-2017. Below is a sample document for the collection we will be building:
 
-> {
+```javascript
+{
   "web_url": "http://www.nytimes.com/2000/04/01/business/a-role-model-s-new-clothes.html",
   "snippet": "Ever mindful of the need to stay au courant, Mattel staged a makeoverthis year for Barbie, the 41-year-old fashion doll with $1.3 billion in annual sales. Sheemerged with a navel and a smile that shows some teeth, giving her a slightly morenatural...",
   "lead_paragraph": "Ever mindful of the need to stay au courant, Mattel staged amakeover this year for Barbie, the 41-year-old fashion doll with $1.3 billion in annual sales.She emerged with a navel and a smile that shows some teeth, giving her a slightly morenatural look. These were not, however, the only concessions to reality that Barbie'sdesigners have felt compelled to make recently. In the last couple of years, Mattel Inc. hasbeen under increasing pressure from some parents to lay aside Barbie's trademarkvagueness and make her more career-oriented to build credibility -- not to mention sales --among the primary-school set and their two-career parents.",
@@ -71,6 +72,7 @@ The Archive API provides lists of NYT articles by month going back to 1851. We p
   "word_count": 1820,
   "slideshow_credits": null
 }
+```
 
 
 ### Usecases :
@@ -88,4 +90,6 @@ The Archive API provides lists of NYT articles by month going back to 1851. We p
 11. Find the organization that appears the most in NYT (organization)
 12. Find the section-name for which maximum number of articles written
 13. List all the types of material with article count
-14. Find which month had highest number of articles written15.Find 10 most popular article in the given timeframe
+14. Find which month had highest number of articles written
+15. Find 10 most popular article in the given timeframe
+
