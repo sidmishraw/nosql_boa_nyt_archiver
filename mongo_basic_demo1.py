@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-03-20 14:26:22
+# @Last Modified time: 2017-03-20 16:16:48
 
 
 
@@ -50,7 +50,9 @@ __EQ__ = '$eq'
 __GROUP__ = '$group'
 __SUM__ = '$sum'
 __ID_OP__ = '_id'
-
+__MATCH__ = '$match'
+__UNWIND__ = '$unwind'
+__SORT__ = '$sort'
 
 
 
@@ -238,6 +240,42 @@ def list_articles_type_of_materials():
   cursor = db['month_4'].aggregate(pipeline_query)
 
   return cursor
+
+
+
+
+# 7. Find the most productive reporter (reporter)
+def most_productive_reporter():
+  '''
+  This function will return the json string for the most productive reporter. The productivity
+  is defined by the number of articles the person appears in `byline.person` field with a 
+  `reported` role.
+
+  :return: most_productive_reporter :class: `str`
+  '''
+
+  client = get_client()
+
+  db = client.get_database('archives_2000')
+
+  # db.month_4.aggregate([{$match: {$and: [{'byline.person.role': "reported"}, \
+  # {'byline.person.firstname': {$regex: /.+/}}]}}, {$unwind: '$byline.person'},\ 
+  # {$group: {'_id': '$byline.person', 'article_count': {$sum: 1}}}, {$sort: {'article_count': -1}}])
+  pipeline_query = [{__MATCH__: {__AND__: [\
+  {'{}.{}.{}'.format(__BYLINE__, __PERSON__, __ROLE__): 'reported'},\
+  {'{}.{}.{}'.format(__BYLINE__, __PERSON__, __FIRSTNAME__): {__REGEX__: '.+'}}]}},\
+  {__UNWIND__: '${}.{}'.format(__BYLINE__, __PERSON__)},\
+  {__GROUP__: {__ID_OP__: '${}.{}'.format(__BYLINE__, __PERSON__), 'article_count': {__SUM__: 1}}},\
+  {__SORT__: {'article_count': -1}}]
+
+  cursor = db['month_4'].aggregate(pipeline_query)
+
+  most_productive_reporter = None
+
+  if cursor != None:
+    most_productive_reporter = next(cursor)
+
+  return most_productive_reporter
 
 
 
