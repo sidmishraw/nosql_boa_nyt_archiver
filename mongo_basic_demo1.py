@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-03 13:10:05
+# @Last Modified time: 2017-05-04 11:45:36
 
 
 '''
@@ -18,6 +18,7 @@ from json import loads
 from urllib.request import urlopen
 from logging import basicConfig
 from logging import warning
+import re
 
 
 # pymongo imports
@@ -60,6 +61,12 @@ __ID_OP__ = '_id'
 __MATCH__ = '$match'
 __UNWIND__ = '$unwind'
 __SORT__ = '$sort'
+__ELEM_MATCH__ = '$elemMatch'
+__LTEQ__ = '$lte'
+__GTEQ__ = '$gte'
+__COUNT_OP__ = '$count'
+__COUNT_FIELD__ = 'count'
+__LIMIT__ = '$limit'
 
 
 # Article fields
@@ -190,9 +197,10 @@ def __insert_documents__(client, year, month):
   archives, archives_count = invoke_archives_api(year=year, month=month)
 
   db = client.get_database(__DATABASE_NAME__)
+
   db[__COLLECTION_NAME__].insert_many(archives)
 
-  print('''Created and inserted {archvies_count} archives for year: {year} month:{month} \
+  warning('''Created and inserted {archvies_count} archives for year: {year} month:{month} \
         into {collection_name} collection.'''.format(archvies_count=archives_count,
                                                      year=year,
                                                      month=month,
@@ -227,11 +235,11 @@ def create_archives_dataset():
       try:
         __insert_documents__(client, year, month)
       except Error:
-        print(
+        warning(
             'Failed inserting data for year:{year}, month:{month}'.format(
                 year=year, month=month))
 
-  print('Completed data insertion for Phase 1: 2005 - 2007')
+  warning('Completed data insertion for Phase 1: 2005 - 2007')
 
   # insert data for SECOND PHASE - 2015 - 2017 ( Includes data from years
   # 2015, 2016 and few years of 2017)
@@ -240,11 +248,11 @@ def create_archives_dataset():
       try:
         __insert_documents__(client, year, month)
       except Error:
-        print(
+        warning(
             'Failed inserting data for year:{year}, month:{month}'.format(
                 year=year, month=month))
 
-  print('Completed data insertion for Phase 1: 2015 - 2017')
+  warning('Completed data insertion for Phase 1: 2015 - 2017')
 
   return
 
@@ -324,7 +332,7 @@ def search_in_articles(user_entry):
 
 
 # 4. Find articles by reporter name.
-def search_articles_reporter_name(first_name, middle_name, last_name):
+def search_articles_reporter_name(first_name='', middle_name='', last_name=''):
   '''
   search_articles_reporter_name(first_name, middle_name, last_name) -> pymongo.cursor.Cursor
 
@@ -337,11 +345,11 @@ def search_articles_reporter_name(first_name, middle_name, last_name):
 
   Input(s):
 
-    :param: first_name `str` -- The first name of the reporter.
+    :param: first_name `str` -- The first name of the reporter. -- defaults to ''
 
-    :param: middle_name `str` -- The middle name of the reporter.
+    :param: middle_name `str` -- The middle name of the reporter.  -- defaults to ''
 
-    :param last_name `str` -- The last name of the reporter.
+    :param last_name `str` -- The last name of the reporter.  -- defaults to ''
 
   Output(s):
 
@@ -369,6 +377,9 @@ def search_articles_reporter_name(first_name, middle_name, last_name):
           },
           {
             'byline.person.role': 'reported'
+          },
+          {
+            'document_type': 'article'
           }
         ]
   })
@@ -380,25 +391,37 @@ def search_articles_reporter_name(first_name, middle_name, last_name):
               '{byline}.{person}.{first_name}'.format(
                   byline=__BYLINE__,
                   person=__PERSON__,
-                  first_name=__FIRSTNAME__): first_name
+                  first_name=__FIRSTNAME__): {
+                  __REGEX__: re.compile('.*{firstname}.*'.format(firstname=first_name),
+                                        re.IGNORECASE)
+              }
           },
           {
               '{byline}.{person}.{middle_name}'.format(
                   byline=__BYLINE__,
                   person=__PERSON__,
-                  middle_name=__MIDDLENAME__): middle_name
+                  middle_name=__MIDDLENAME__): {
+                  __REGEX__: re.compile('.*{middlename}.*'.format(middlename=middle_name),
+                                        re.IGNORECASE)
+              }
           },
           {
               '{byline}.{person}.{last_name}'.format(
                   byline=__BYLINE__,
                   person=__PERSON__,
-                  last_name=__LASTNAME__): last_name
+                  last_name=__LASTNAME__): {
+                  __REGEX__: re.compile('.*{lastname}.*'.format(lastname=last_name),
+                                        re.IGNORECASE)
+              }
           },
           {
               '{byline}.{person}.{role}'.format(
                   byline=__BYLINE__,
                   person=__PERSON__,
                   role=__ROLE__): 'reported'
+          },
+          {
+              __DOCUMENT_TYPE__: 'article'
           }
       ]
   }
@@ -494,6 +517,8 @@ def most_productive_reporter():
   db = client.get_database(__DATABASE_NAME__)
 
   '''
+  Sample mongo shell query:
+
   db.nyt_archives.aggregate([
     {
       $match: {
@@ -581,8 +606,161 @@ def most_productive_reporter():
   return most_productive_reporter
 
 
+# query#1. Compare the top news keywords for the years 2015-2017 and 2005-2007 to
+# see what the news has been about. (Basically try and find the difference tha
+# thas come about in last 10 years.)
+def compare_news_keywords():
+  '''
+  compare_news_keywords() -> (list[str], list[str])
+
+  Fetches the top 10 keywords for years 2005-2007 and 2015-2017 and return the lists of these
+  words with the most popular words on the top of each list.
+
+  Input(s):
+
+    None
+
+  Output(s):
+
+    :return: phase1_words `list[str]` -- The list of keyword values, length = 10 and list index 0
+    is the most frequent keyword for year range 2005-2007.
+
+    :return: phase2_words `list[str]` -- The list of keyword values, length = 10 and list index 0
+    is the most frequent keyword for year range 2015-2017.
+  '''
+
+  client = get_client()
+
+  db = client.get_database(__DATABASE_NAME__)
+
+  phase1_words = None
+  phase2_words = None
+
+  '''
+  Sample mongo shell query:
+
+  // for year 2005-2007 -- top 10 keywords a.k.a tags
+  db.archives.aggregate([{
+      $match: {
+          "pub_date": {
+              $regex: /200[5-7].*/i
+          }
+      }
+  }, {
+      $unwind: "$keywords"
+  }, {
+      $group: {
+          _id: "$keywords",
+          count: {
+              $sum: 1
+          }
+      }
+  }, {
+      $sort: {
+          count: -1
+      }
+  }, {
+      $limit: 10
+  }])
+
+  // for year 2015 - 2017 -- top 10 keywords a.k.a tags
+  db.archives.aggregate([{
+      $match: {
+          "pub_date": {
+              $regex: /201[5-7].*/i
+          }
+      }
+  }, {
+      $unwind: "$keywords"
+  }, {
+      $group: {
+          _id: "$keywords",
+          count: {
+              $sum: 1
+          }
+      }
+  }, {
+      $sort: {
+          count: -1
+      }
+  }, {
+      $limit: 10
+  }])
+  '''
+
+  # query is for aggregation pipeline of pymongo
+  # query for year range 2005-2007
+  phase1_query = [
+      {
+          __MATCH__: {
+              __PUB_DATE__: {
+                  __REGEX__: re.compile('200[5-7].*', re.IGNORECASE)
+              }
+          }
+      },
+      {
+          __UNWIND__: '${pattern}'.format(pattern=__KEYWORDS__)
+      },
+      {
+          __GROUP__: {
+              __ID_OP__: '${pattern}'.format(pattern=__KEYWORDS__),
+              __COUNT_FIELD__: {
+                  __SUM__: 1
+              }
+          }
+      },
+      {
+          __SORT__: {
+              __COUNT_FIELD__: -1
+          }
+      },
+      {
+          __LIMIT__: 10
+      }
+  ]
+
+  cursor = db[__COLLECTION_NAME__].aggregate(phase1_query)
+
+  phase1_words = list(cursor)
+
+  phase2_query = [
+      {
+          __MATCH__: {
+              __PUB_DATE__: {
+                  __REGEX__: re.compile('201[5-7].*', re.IGNORECASE)
+              }
+          }
+      },
+      {
+          __UNWIND__: '${pattern}'.format(pattern=__KEYWORDS__)
+      },
+      {
+          __GROUP__: {
+              __ID_OP__: '${pattern}'.format(pattern=__KEYWORDS__),
+              __COUNT_FIELD__: {
+                  __SUM__: 1
+              }
+          }
+      },
+      {
+          __SORT__: {
+              __COUNT_FIELD__: -1
+          }
+      },
+      {
+          __LIMIT__: 10
+      }
+  ]
+
+  cursor = db[__COLLECTION_NAME__].aggregate(phase2_query)
+
+  phase2_words = list(cursor)
+
+  return (phase1_words, phase2_words)
+
+
 if __name__ == '__main__':
   basicConfig(format='%(asctime)s %(message)s')
-  print('Testing pymongo and mongo connections and queries...')
+  warning('Testing pymongo and mongo connections and queries...')
   # db = client.get_database('usdata')
   # print('All the collections of `usdata` db : {}'.format(db.collection_names()))
