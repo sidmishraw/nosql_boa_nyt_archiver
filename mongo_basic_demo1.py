@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-04 11:45:36
+# @Last Modified time: 2017-05-04 14:50:39
 
 
 '''
@@ -23,6 +23,8 @@ import re
 
 # pymongo imports
 from pymongo import MongoClient
+from pymongo import ASCENDING
+from pymongo import DESCENDING
 
 
 # Time frame contants
@@ -44,8 +46,10 @@ __RESPONSE__ = 'response'
 
 
 # Database(mongo) name
-__DATABASE_NAME__ = 'nyt_archives'
-__COLLECTION_NAME__ = 'archives'
+# __DATABASE_NAME__ = 'nyt_archives'
+# __COLLECTION_NAME__ = 'archives'
+__DATABASE_NAME__ = 'archives_2000'
+__COLLECTION_NAME__ = 'month_4'
 
 
 # Mongo Operator constants
@@ -495,7 +499,7 @@ def list_articles_type_of_materials():
 def most_productive_reporter():
   '''
 
-  most_productive_reporter() -> str
+  most_productive_reporter() -> dict
 
   Query#7. Find the most productive reporter (reporter)
 
@@ -509,7 +513,7 @@ def most_productive_reporter():
 
   Output(s):
 
-    :return: most_productive_reporter `str` -- The most productive reporter's JSON string
+    :return: most_productive_reporter `dict` -- The most productive reporter's JSON string
   '''
 
   client = get_client()
@@ -611,7 +615,11 @@ def most_productive_reporter():
 # thas come about in last 10 years.)
 def compare_news_keywords():
   '''
-  compare_news_keywords() -> (list[str], list[str])
+  compare_news_keywords() -> (list[dict], list[dict])
+
+  Query#1: Compare the top news keywords for the years 2015-2017 and 2005-2007 to
+  see what the news has been about. (Basically try and find the difference that
+  has come about in last 10 years.)
 
   Fetches the top 10 keywords for years 2005-2007 and 2015-2017 and return the lists of these
   words with the most popular words on the top of each list.
@@ -622,10 +630,10 @@ def compare_news_keywords():
 
   Output(s):
 
-    :return: phase1_words `list[str]` -- The list of keyword values, length = 10 and list index 0
+    :return: phase1_words `list[dict]` -- The list of keyword values, length = 10 and list index 0
     is the most frequent keyword for year range 2005-2007.
 
-    :return: phase2_words `list[str]` -- The list of keyword values, length = 10 and list index 0
+    :return: phase2_words `list[dict]` -- The list of keyword values, length = 10 and list index 0
     is the most frequent keyword for year range 2015-2017.
   '''
 
@@ -757,6 +765,200 @@ def compare_news_keywords():
   phase2_words = list(cursor)
 
   return (phase1_words, phase2_words)
+
+
+# Query#2: Find the most popular news keywords from the entire archives
+# collection.
+def most_popular_news_keywords():
+  '''
+  most_popular_news_keywords() -> list[dict]
+
+  Query#2: Find the most popular `news` keywords from the entire archives.
+
+  Fetches the list of 5 most popular keywords for news type of material.
+
+  Uses mongo's aggregation pipeline under the hood.
+
+  Input(s):
+
+    None
+
+  Output(s):
+
+    :return: most_popular_keywords `list[dict]` -- The list of most popular news keywords in the
+    entire archives collection(dataset) with the most popular of the bunch on the top of the list
+    indexed at 0 and so on..
+  '''
+
+  client = get_client()
+
+  db = client.get_database(__DATABASE_NAME__)
+
+  most_popular_keywords = None
+
+  '''
+  Sample mongo shell query:
+
+  //#2Find the most popular news keywords from the entire archives collection.
+  db.archives.aggregate([{
+      $match: {
+          "type_of_material": "News"
+      }
+  }, {
+      $unwind: "$keywords"
+  }, {
+      $group: {
+          _id: "$keywords",
+          count: {
+              $sum: 1
+          }
+      }
+  }, {
+      $sort: {
+          count: -1
+      }
+  }, {
+      $limit: 5
+  }])
+  '''
+
+  query = [
+      {
+          __MATCH__: {
+              __TYPE_OF_MATERIAL__: "News"
+          }
+      },
+      {
+          __UNWIND__: "${pattern}".format(pattern=__KEYWORDS__)
+      },
+      {
+          __GROUP__: {
+              __ID_OP__: "${pattern}".format(pattern=__KEYWORDS__),
+              __COUNT_FIELD__: {
+                  __SUM__: 1
+              }
+          }
+      },
+      {
+          __SORT__: {
+              __COUNT_FIELD__: -1
+          }
+      },
+      {
+          __LIMIT__: 5
+      }
+  ]
+
+  cursor = db[__COLLECTION_NAME__].aggregate(query)
+
+  most_popular_keywords = list(cursor)
+
+  return most_popular_keywords
+
+
+# Query#6: Find the articles that have occurred on page# x over these years.
+def xpage_articles(page_number=1):
+  '''
+  xpage_articles(page_number=1) -> list[dict]
+
+  Query#6: Find the articles that have occured on page# x over these years.
+
+  Fetches the list of documents for the articles that have occurred on page number `page_number`
+  over these years in the dataset (archives).
+
+  Input(s):
+
+    :param: page_number `int` -- The printed page number you are looking for.
+
+  Output(s):
+
+    :return: articles `list[dict]` -- The list of `article` documents occurring
+    on the printed page provided.
+  '''
+
+  client = get_client()
+
+  db = client.get_database(__DATABASE_NAME__)
+
+  articles = None
+
+  '''
+  Sample mongo shell query:
+
+  // Query#6. Find the articles that have occured on page# x over these years.
+  db.archives.find({
+      $and: [{
+          "print_page": "90"
+      }, {
+          "document_type": "article"
+      }]
+  })
+  '''
+
+  query = {
+      __AND__: [
+          {
+              __PRINT_PAGE__: str(page_number)
+          },
+          {
+              __DOCUMENT_TYPE__: "article"
+          }
+      ]
+  }
+
+  cursor = db[__COLLECTION_NAME__].find(query)
+
+  articles = list(cursor)
+
+  return articles
+
+
+# Query#8. Find the longest article (page or word count)
+def longest_article():
+  '''
+  longest_article() -> dict
+
+  Query#8. Find the longest article (page or word count)
+
+  Finds and returns the longest article depending on the word count
+  (document) obtained from the archives dataset.
+
+  Input(s):
+
+    None
+
+  Output(s):
+
+    :return: article `dict` -- The longest article mongo document
+  '''
+
+  client = get_client()
+
+  db = client.get_database(__DATABASE_NAME__)
+
+  article = None
+
+  '''
+  Sample mongo shell query:
+
+  //Query#8. Find the longest article (page or word count)
+  db.month_4.find({
+      "document_type": "article"
+  }).sort({
+      "word_count": -1
+  }).limit(1)
+  '''
+
+  query = {
+      __DOCUMENT_TYPE__: 'article'
+  }
+
+  cursor = db[__COLLECTION_NAME__].find(
+      query).sort(__WORD_COUNT__, DESCENDING).limit(1)
+
+  article = list(cursor)[0]
+
+  return article
 
 
 if __name__ == '__main__':

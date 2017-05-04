@@ -2,7 +2,7 @@
  * @Author: Sidharth Mishra
  * @Date:   2017-05-03 21:54:40
  * @Last Modified by:   Sidharth Mishra
- * @Last Modified time: 2017-05-04 11:20:54
+ * @Last Modified time: 2017-05-04 14:37:51
  */
 
 'use strict';
@@ -56,6 +56,30 @@ db.month_4.find({
 })
 
 
+//#2Find the most popular news keywords from the entire archives collection.
+db.month_4.aggregate([{
+    $match: {
+        "type_of_material": "News"
+    }
+}, {
+    $unwind: "$keywords"
+}, {
+    $group: {
+        _id: "$keywords",
+        count: {
+            $sum: 1
+        }
+    }
+}, {
+    $sort: {
+        count: -1
+    }
+}, {
+    $limit: 5
+}])
+
+
+
 // # 1
 // for year 2005-2007 -- top 10 keywords a.k.a tags
 db.month_4.aggregate([{
@@ -104,3 +128,21 @@ db.month_4.aggregate([{
 }, {
     $limit: 10
 }])
+
+
+// Query#6. Find the articles that have occured on page# x over these years.
+db.month_4.find({
+    $and: [{
+        "print_page": "90"
+    }, {
+        "document_type": "article"
+    }]
+})
+
+
+//Query#8. Find the longest article (page or word count)
+db.month_4.find({
+    "document_type": "article"
+}).sort({
+    "word_count": -1
+}).limit(1)
