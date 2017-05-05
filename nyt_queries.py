@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 15:16:23
+# @Last Modified time: 2017-05-05 15:39:25
 
 
 '''
@@ -27,6 +27,10 @@ from pymongo import ASCENDING
 from pymongo import DESCENDING
 
 
+# setting up logger
+basicConfig(format='%(asctime)s %(message)s')
+
+
 # Time frame contants
 PHASE_1_START_YEAR = 2005
 PHASE_1_END_YEAR = 2007
@@ -46,10 +50,10 @@ __RESPONSE__ = 'response'
 
 
 # Database(mongo) name
-# __DATABASE_NAME__ = 'nyt_archives'
-# __COLLECTION_NAME__ = 'archives'
-__DATABASE_NAME__ = 'archives_2000'
-__COLLECTION_NAME__ = 'month_4'
+__DATABASE_NAME__ = 'nyt_archives'
+__COLLECTION_NAME__ = 'archives'
+# __DATABASE_NAME__ = 'archives_2000'
+# __COLLECTION_NAME__ = 'month_4'
 
 
 # Mongo Operator constants
