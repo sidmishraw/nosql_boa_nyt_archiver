@@ -1086,6 +1086,108 @@ def articles_between(begin_time, end_time):
 
   return articles
 
+# Query#11: Find the organization that appears the most in NYT
+def most_organization():
+  '''
+  most_organization() -> dict
+
+  Query#11: Find the organization that appears the most in NYT
+
+  Input(s):
+    None
+
+  Output(s):
+    :return: organization `dict` -- The organization that appears the most in NYT
+  '''
+
+  client = get_client()
+
+  db = client.get_database(__DATABASE_NAME__)
+
+  organization = None
+
+  '''
+  Sample mongo shell query:
+  db.nyt_archives.aggregate([
+    {
+      $match: {
+        $and: [
+          {
+            'keywords.name': "organization"
+          },
+          {
+            'keywords.value': {
+              $regex: /.+/
+            }
+          }
+        ]
+      }
+    },
+    {
+      $unwind: '$keywords'
+    },
+    {
+      $group: {
+        '_id': '$keywords.value',
+        'organization_count': {
+          $sum: 1
+        }
+      }
+    },
+    {
+      $sort: {
+        'organization_count': -1
+      }
+    }
+  ])
+  '''
+
+   query = [
+      {
+          __MATCH__: {
+              __AND__: [
+                  {
+                      '{keywords}.{name}'.format(
+                          keywords=__KEYWORDS__,
+                          name=__KEYWORDS_NAME__): 'organization'
+                  },
+                  {
+                      '{keywords}.{value}'.format(
+                          keywords=__KEYWORDS__,
+                          value=__KEYWORDS_VALUE__): {
+                          __REGEX__: '.+'
+                      }
+                  }
+              ]
+          }
+      },
+      {
+          __UNWIND__: '${keywords}'.format(
+              keywords=__KEYWORDS__)
+      },
+      {
+          __GROUP__: {
+              __ID_OP__: '${keywords}.{value}'.format(
+                  keywords=__KEYWORDS__,
+                  value=__KEYWORDS_VALUE__),
+              'organization_count': {
+                  __SUM__: 1
+              }
+          }
+      },
+      {
+          __SORT__: {
+              'organization_count': -1
+          }
+      }
+  ]
+
+  cursor = db[__COLLECTION_NAME__].aggregate(query)
+
+  if cursor is not None:
+    organization = next(cursor)
+
+  return organization
 
 if __name__ == '__main__':
   basicConfig(format='%(asctime)s %(message)s')
