@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 14:40:07
+# @Last Modified time: 2017-05-05 15:16:23
 
 
 '''
@@ -284,7 +284,7 @@ def create_archives_dataset():
   return
 
 
-# 3. Search for articles based on user entry.
+# Query#3. Search for articles based on user entry.
 # Querying mongodb
 def search_in_articles(user_entry):
   '''
@@ -374,7 +374,7 @@ def search_in_articles(user_entry):
   return articles
 
 
-# 4. Find articles by reporter name.
+# Query#4. Find articles by reporter name.
 def search_articles_reporter_name(first_name='', middle_name='', last_name=''):
   '''
   search_articles_reporter_name(first_name, middle_name, last_name) -> list[dict]
@@ -475,7 +475,7 @@ def search_articles_reporter_name(first_name='', middle_name='', last_name=''):
   return articles
 
 
-# 13. List all the types of material with article count
+# Query#13. List all the types of material with article count
 def list_articles_type_of_materials():
   '''
 
@@ -536,7 +536,7 @@ def list_articles_type_of_materials():
   return articles
 
 
-# 7. Find the most productive reporter (reporter)
+# Query#7. Find the most productive reporter (reporter)
 def most_productive_reporter():
   '''
 
@@ -653,7 +653,7 @@ def most_productive_reporter():
   return most_productive_reporter
 
 
-# query#1. Compare the top news keywords for the years 2015-2017 and 2005-2007 to
+# Query#1. Compare the top news keywords for the years 2015-2017 and 2005-2007 to
 # see what the news has been about. (Basically try and find the difference tha
 # thas come about in last 10 years.)
 def compare_news_keywords():
@@ -1369,7 +1369,7 @@ def highest_articles_month():
 
   '''
   Sample mongo shell query:
-  db.month_4.aggregate([{
+  db.archives.aggregate([{
     $match: {
         "document_type": "article"
     }
@@ -1420,6 +1420,78 @@ def highest_articles_month():
     max_times = '{month}/{year}'.format(month=st.month, year=st.year)
 
   return max_times, count
+
+
+# Query#15. Find 10 most popular article in the given timeframe
+def front_page_articles(begin_time, end_time):
+  '''
+  front_page_articles(begin_time, end_time) -> list[dict]
+
+  Query#15. Find 10 most popular article in the given timeframe
+
+  Finds the list of 10 most popular articles, front page for the given time range.
+
+  Input(s):
+
+    :param: begin_time `str` -- The begin time range, a string in format 'yyyy-mm-dd'
+
+    :param: end_time `str` -- The end time range, a string in format 'yyyy-mm-dd'
+
+  Output(s):
+
+    :return: front_articles `list[dict]` -- The 10 articles from front page for the given time range
+  '''
+
+  client = get_client()
+
+  db = client.get_database(__DATABASE_NAME__)
+
+  '''
+  Sample mongo shell query:
+
+  // #15. Find 10 most popular article in the given timeframe
+  db.archives.find({
+    $and: [{
+        "pub_date": {
+            $gt: "2000-04-01"
+        }
+    }, {
+        "pub_date": {
+            $lt: "2000-04-10"
+        }
+    }, {
+        "print_page": "1"
+    }, {
+        "document_type": "article"
+    }]
+  }).limit(10)
+  '''
+  query = {
+      __AND__: [
+          {
+              __PUB_DATE__: {
+                  __GT__: begin_time
+              }
+          },
+          {
+              __PUB_DATE__: {
+                  __LT__: end_time
+              }
+          },
+          {
+              __PRINT_PAGE__: "1"
+          },
+          {
+              __DOCUMENT_TYPE__: "article"
+          }
+      ]
+  }
+
+  cursor = db[__COLLECTION_NAME__].find(query).limit(10)
+
+  front_articles = list(cursor) if cursor is not None else list()
+
+  return front_articles
 
 
 if __name__ == '__main__':

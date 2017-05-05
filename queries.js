@@ -2,7 +2,7 @@
  * @Author: Sidharth Mishra
  * @Date:   2017-05-03 21:54:40
  * @Last Modified by:   Sidharth Mishra
- * @Last Modified time: 2017-05-05 14:35:28
+ * @Last Modified time: 2017-05-05 15:05:46
  */
 
 'use strict';
@@ -13,7 +13,7 @@ use archives_2000
 
 // queries for trial stuff
 
-// #3
+// #3. Search for articles based on user entry.
 db.month_4.find({
     $and: [{
         "document_type": "article"
@@ -54,6 +54,8 @@ db.month_4.find({
 })
 
 
+// #5. Find articles about specific people or organizations. For eg - 
+// search forarticles about Leonardo Dicaprio etc.
 //#5 -- Organization
 db.month_4.find({
     "keywords": {
@@ -79,7 +81,7 @@ db.month_4.find({
 })
 
 
-//#2Find the most popular news keywords from the entire archives collection.
+//#2. Find the most popular news keywords from the entire archives collection.
 db.month_4.aggregate([{
     $match: {
         "type_of_material": "News"
@@ -103,7 +105,8 @@ db.month_4.aggregate([{
 
 
 
-// # 1
+// # 1. Compare the top news keywords for the years 2015-2017 and 2005-2007 tosee what the news 
+// has been about. (Basically try and find the difference thathas come about in last 10 years.)
 // for year 2005-2007 -- top 10 keywords a.k.a tags
 db.month_4.aggregate([{
     $match: {
@@ -153,7 +156,7 @@ db.month_4.aggregate([{
 }])
 
 
-// Query#6. Find the articles that have occured on page# x over these years.
+// #6. Find the articles that have occured on page# x over these years.
 db.month_4.find({
     $and: [{
         "print_page": "90"
@@ -163,7 +166,7 @@ db.month_4.find({
 })
 
 
-//Query#8. Find the longest article (page or word count)
+// #8. Find the longest article (page or word count)
 db.month_4.find({
     "document_type": "article"
 }).sort({
@@ -172,7 +175,7 @@ db.month_4.find({
 
 
 
-// #10
+// #10. Find the articles published in certain time range (date)
 db.month_4.find({
     $and: [{
         "pub_date": { $gt: "2000-04-01" }
@@ -181,7 +184,7 @@ db.month_4.find({
     }]
 })
 
-// # 11
+// #11. Find the organization that appears the most in NYT (organization)
 db.month_4.aggregate([{
     $unwind: '$keywords'
 }, {
@@ -208,7 +211,7 @@ db.month_4.aggregate([{
 }])
 
 
-//# 12
+//# 12. Find the section-name for which maximum number of articles written
 db.archives.aggregate([{
     $match: {
         "document_type": "article"
@@ -227,12 +230,12 @@ db.archives.aggregate([{
 }])
 
 
-//#9
+//#9. Find the number of original article from NYT (source)
 db.month_4.find({
     "source": "The New York Times"
 })
 
-//#14
+//#14. Find which month had highest number of articles written
 db.month_4.aggregate([{
     $match: {
         "document_type": "article"
@@ -249,3 +252,20 @@ db.month_4.aggregate([{
         pub_count: -1
     }
 }])
+
+// #15. Find 10 most popular article in the given timeframe
+db.month_4.find({
+    $and: [{
+        "pub_date": {
+            $gt: "2000-04-01"
+        }
+    }, {
+        "pub_date": {
+            $lt: "2000-04-10"
+        }
+    }, {
+        "print_page": "1"
+    }, {
+        "document_type": "article"
+    }]
+}).limit(10)
