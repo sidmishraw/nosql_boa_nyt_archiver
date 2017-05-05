@@ -2,7 +2,7 @@
  * @Author: Sidharth Mishra
  * @Date:   2017-05-03 21:54:40
  * @Last Modified by:   Sidharth Mishra
- * @Last Modified time: 2017-05-04 14:37:51
+ * @Last Modified time: 2017-05-05 11:43:53
  */
 
 'use strict';
@@ -12,6 +12,29 @@ use archives_2000
 
 
 // queries for trial stuff
+
+// #3
+db.month_4.find({
+    $and: [{
+        "document_type": "article"
+    }, {
+
+        $or: [{
+            "lead_paragraph": {
+                $regex: /.*of the need.*/
+            }
+        }, {
+            "snippet": {
+                $regex: /.*of the need.*/
+            }
+        }, {
+            "abstract": {
+                $regex: /.*of the need.*/
+            }
+        }]
+    }]
+})
+
 
 // #4. Find articles by reporter name.
 
@@ -146,3 +169,14 @@ db.month_4.find({
 }).sort({
     "word_count": -1
 }).limit(1)
+
+
+
+// #10
+db.month_4.find({
+    $and: [{
+        "pub_date": { $gt: "2000-04-01" }
+    }, {
+        "pub_date": { $lt: "2000-05-01" }
+    }]
+})

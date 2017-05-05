@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 11:15:11
+# @Last Modified time: 2017-05-05 12:00:29
 
 
 '''
@@ -288,7 +288,7 @@ def create_archives_dataset():
 # Querying mongodb
 def search_in_articles(user_entry):
   '''
-  search_in_articles(user_entry) -> pymongo.cursor.Cursor
+  search_in_articles(user_entry) -> list[dict]
 
   Query#3 - Search for articles based on user entry.
 
@@ -302,8 +302,7 @@ def search_in_articles(user_entry):
 
   Output(s):
 
-    :return: cursor `pymongo.cursor.Cursor` -- The cursor object that can be used to iterate through
-    the results on demand.
+    :return: articles `list[dict]` -- The list of article documents
   '''
 
   client = get_client()
@@ -313,55 +312,72 @@ def search_in_articles(user_entry):
   '''
   Sample mongo shell query:
 
-  db.nyt_archives.find({
-        $or: [{
-                "lead_paragraph": {
-                    $regex: /.*of the need.*/
-                  }
-              },
-              {
-                "snippet": {
-                    $regex: /.*of the need.*/
-                }
-              },
-              {
-                "abstract": {
-                    $regex: /.*of the need.*/
-                }
+  db.month_4.find({
+      $and: [{
+          "document_type": "article"
+      }, {
+
+          $or: [{
+              "lead_paragraph": {
+                  $regex: /.*of the need.*/i
               }
-        ]
+          }, {
+              "snippet": {
+                  $regex: /.*of the need.*/i
+              }
+          }, {
+              "abstract": {
+                  $regex: /.*of the need.*/i
+              }
+          }]
+      }]
   })
   '''
 
   query = {
-      __OR__: [
+      __AND__: [
           {
-              __LEAD_PARAGRAPH__: {
-                  __REGEX__: '.*{}.*'.format('.*'.join(user_entry.split(' ')))
-              }
+              __DOCUMENT_TYPE__: "article"
           },
           {
-              __SNIPPET__: {
-                  __REGEX__: '.*{}.*'.format('.*'.join(user_entry.split(' ')))
-              }
-          },
-          {
-              __ABSTRACT__: {
-                  __REGEX__: '.*{}.*'.format('.*'.join(user_entry.split(' ')))
-              }
+              __OR__: [
+                  {
+                      __LEAD_PARAGRAPH__: {
+                          __REGEX__: re.compile('.*{pattern}.*'.format(
+                              pattern='.*'.join(user_entry.split(' '))),
+                              re.IGNORECASE)
+                      }
+                  },
+                  {
+                      __SNIPPET__: {
+                          __REGEX__: re.compile('.*{pattern}.*'.format(
+                              pattern='.*'.join(user_entry.split(' '))),
+                              re.IGNORECASE)
+                      }
+                  },
+                  {
+                      __ABSTRACT__: {
+                          __REGEX__: re.compile('.*{pattern}.*'.format(
+                              pattern='.*'.join(user_entry.split(' '))),
+                              re.IGNORECASE)
+                      }
+                  }
+              ]
           }
       ]
   }
 
   cursor = db[__COLLECTION_NAME__].find(query)
 
-  return cursor
+  articles = list(cursor) if cursor is not None else None
+
+  return articles
 
 
 # 4. Find articles by reporter name.
 def search_articles_reporter_name(first_name='', middle_name='', last_name=''):
   '''
-  search_articles_reporter_name(first_name, middle_name, last_name) -> pymongo.cursor.Cursor
+  search_articles_reporter_name(first_name, middle_name, last_name) -> list[dict]
 
   Query#4. Find articles by reporter name.
 
@@ -380,8 +396,7 @@ def search_articles_reporter_name(first_name='', middle_name='', last_name=''):
 
   Output(s):
 
-    :return: cursor `pymongo.cursor.Cursor` -- The cursor instance that can be iterated upon when
-    needed.
+    :return: articles `list[dict]` -- The list of article documents
   '''
 
   client = get_client()
@@ -455,14 +470,16 @@ def search_articles_reporter_name(first_name='', middle_name='', last_name=''):
 
   cursor = db[__COLLECTION_NAME__].find(query)
 
-  return cursor
+  articles = list(cursor) if cursor is not None else None
+
+  return articles
 
 
 # 13. List all the types of material with article count
 def list_articles_type_of_materials():
   '''
 
-  list_articles_type_of_materials() -> pymongo.cursor.Cursor
+  list_articles_type_of_materials() -> list[dict]
 
   Query#13. List all the types of material with article count.
 
@@ -475,8 +492,7 @@ def list_articles_type_of_materials():
 
   Output(s):
 
-    :return: cursor `pymongo.cursor.Cursor` -- The cursor instance that can be iterated upon when
-    needed.
+    :return: articles `list[dict]` -- The list of articles
 
   Note: Internally uses the mongo's pipeline aggregation query instead of map-reduce query.
   '''
@@ -505,7 +521,7 @@ def list_articles_type_of_materials():
   pipeline_query = [
       {
           __GROUP__: {
-              __ID_OP__: '${}'.format(__TYPE_OF_MATERIAL__),
+              __ID_OP__: '${type}'.format(type=__TYPE_OF_MATERIAL__),
               'count': {
                   __SUM__: 1
               }
@@ -515,7 +531,9 @@ def list_articles_type_of_materials():
 
   cursor = db[__COLLECTION_NAME__].aggregate(pipeline_query)
 
-  return cursor
+  articles = list(cursor) if cursor is not None else None
+
+  return articles
 
 
 # 7. Find the most productive reporter (reporter)
@@ -752,7 +770,7 @@ def compare_news_keywords():
 
   cursor = db[__COLLECTION_NAME__].aggregate(phase1_query)
 
-  phase1_words = list(cursor)
+  phase1_words = list(cursor) if cursor is not None else None
 
   phase2_query = [
       {
@@ -785,7 +803,7 @@ def compare_news_keywords():
 
   cursor = db[__COLLECTION_NAME__].aggregate(phase2_query)
 
-  phase2_words = list(cursor)
+  phase2_words = list(cursor) if cursor is not None else None
 
   return (phase1_words, phase2_words)
 
@@ -874,7 +892,7 @@ def most_popular_news_keywords():
 
   cursor = db[__COLLECTION_NAME__].aggregate(query)
 
-  most_popular_keywords = list(cursor)
+  most_popular_keywords = list(cursor) if cursor is not None else None
 
   return most_popular_keywords
 
@@ -931,7 +949,7 @@ def xpage_articles(page_number=1):
 
   cursor = db[__COLLECTION_NAME__].find(query)
 
-  articles = list(cursor)
+  articles = list(cursor) if cursor is not None else None
 
   return articles
 
@@ -965,7 +983,7 @@ def longest_article():
   Sample mongo shell query:
 
   //Query#8. Find the longest article (page or word count)
-  db.month_4.find({
+  db.archives.find({
       "document_type": "article"
   }).sort({
       "word_count": -1
@@ -979,15 +997,15 @@ def longest_article():
   cursor = db[__COLLECTION_NAME__].find(
       query).sort(__WORD_COUNT__, DESCENDING).limit(1)
 
-  article = list(cursor)[0]
+  article = list(cursor)[0] if cursor is not None else None
 
   return article
 
 
 # Query#5. Find articles about specific people or organizations
-def search_people_or_organization(flag_person=False, search_string):
+def search_people_or_organization(search_string, flag_person=False):
   '''
-  search_people_or_organization(flag_person=False, search_string) -> pymongo.cursor.Cursor
+  search_people_or_organization(flag_person=False, search_string) -> list[dict]
 
   Query#5. Find articles about specific people or organizations
 
@@ -997,13 +1015,13 @@ def search_people_or_organization(flag_person=False, search_string):
 
   Input(s):
 
-        :param: flag_person 'bool' -- The flag to determine whether the query is about people or not. -- defaults to false
+    :param: flag_person `bool` -- The flag to determine whether the query is about people or not. -- defaults to false
 
-        :param: search_string 'str' -- The name of the person or organization. -- no default
+    :param: search_string `str` -- The name of the person or organization. -- no default
 
-   Output(s):
+  Output(s):
 
-         :return: cursor 'pymongo.cursor.Cursor' -- The cursor instance that can be iterated upon when needed.
+    :return: articles `list[dict]` -- The list of articles
   '''
 
   client = get_client()
@@ -1014,7 +1032,7 @@ def search_people_or_organization(flag_person=False, search_string):
   Mongo shell sample query:
 
   //#5 -- Organization
-  db.month_4.find({
+  db.archives.find({
     “keywords”: {
       $elemMatch: {
         “name”: “organizations”,
@@ -1026,7 +1044,7 @@ def search_people_or_organization(flag_person=False, search_string):
   })
 
   //#5 -- People
-  db.month_4.find({
+  db.archives.find({
     “keywords”: {
       $elemMatch: {
         “name”: “persons”,
@@ -1041,9 +1059,9 @@ def search_people_or_organization(flag_person=False, search_string):
   query = {
       __KEYWORDS__: {
           __ELEM_MATCH__: {
-              __KEYWORDS_NAME__: “organizations” if not flag_person else “persons”,
+              __KEYWORDS_NAME__: "organizations" if not flag_person else "persons",
               __KEYWORDS_VALUE__: {
-                  __REGEX__: re.compile(‘.*{pattern}.*‘.format(
+                  __REGEX__: re.compile('.*{pattern}.*'.format(
                       pattern=search_string), re.IGNORECASE)
               }
           }
@@ -1052,7 +1070,9 @@ def search_people_or_organization(flag_person=False, search_string):
 
   cursor = db[__COLLECTION_NAME__].find(query)
 
-  return cursor
+  articles = list(cursor) if cursor is not None else None
+
+  return articles
 
 
 # Query#10: Find the articles published in certain time range (date)
@@ -1064,9 +1084,9 @@ def articles_between(begin_time, end_time):
 
   Input(s):
 
-    :param: begin_time `datetime` -- The beginning of the time/date range
+    :param: begin_time `str` -- The beginning of the time/date range -- yyyy-mm-dd format
 
-    :param: end_time `datetime` -- The end of the time/date range
+    :param: end_time `str` -- The end of the time/date range -- yyyy-mm-dd format
 
   Output(s):
 
@@ -1078,11 +1098,34 @@ def articles_between(begin_time, end_time):
 
   db = client.get_database(__DATABASE_NAME__)
 
-  query = None
+  '''
+  Sample Mongo shell query
+  db.archives.find({
+    $and: [{
+        "pub_date": { $gt: "2000-04-01" }
+    }, {
+        "pub_date": { $lt: "2000-05-01" }
+    }]
+  })
+  '''
+  query = {
+      __AND__: [
+          {
+              __PUB_DATE__: {
+                  __GT__: begin_time
+              }
+          },
+          {
+              __PUB_DATE__: {
+                  __LT__: end_time
+              }
+          }
+      ]
+  }
 
   cursor = db[__COLLECTION_NAME__].find(query)
 
-  articles = list(cursor)
+  articles = list(cursor) if cursor is not None else None
 
   return articles
 
