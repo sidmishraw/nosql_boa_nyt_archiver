@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 12:41:07
+# @Last Modified time: 2017-05-05 13:38:08
 
 
 '''
@@ -312,7 +312,7 @@ def search_in_articles(user_entry):
   '''
   Sample mongo shell query:
 
-  db.month_4.find({
+  db.archives.find({
       $and: [{
           "document_type": "article"
       }, {
@@ -369,7 +369,7 @@ def search_in_articles(user_entry):
 
   cursor = db[__COLLECTION_NAME__].find(query)
 
-  articles = list(cursor) if cursor is not None else None
+  articles = list(cursor) if cursor is not None else list()
 
   return articles
 
@@ -406,7 +406,7 @@ def search_articles_reporter_name(first_name='', middle_name='', last_name=''):
   '''
   Sample mongo shell query:
 
-  db.nyt_archives.find({
+  db.archives.find({
         $and: [
           {
             'byline.person.firstname': 'Constance'
@@ -470,7 +470,7 @@ def search_articles_reporter_name(first_name='', middle_name='', last_name=''):
 
   cursor = db[__COLLECTION_NAME__].find(query)
 
-  articles = list(cursor) if cursor is not None else None
+  articles = list(cursor) if cursor is not None else list()
 
   return articles
 
@@ -508,7 +508,7 @@ def list_articles_type_of_materials():
   '''
   Sample Mongo shell query:
 
-  db.nyt_archives.aggregate({
+  db.archives.aggregate({
     $group: {
       '_id': '$type_of_material',
       'count': {
@@ -531,7 +531,7 @@ def list_articles_type_of_materials():
 
   cursor = db[__COLLECTION_NAME__].aggregate(pipeline_query)
 
-  articles = list(cursor) if cursor is not None else None
+  articles = list(cursor) if cursor is not None else list()
 
   return articles
 
@@ -564,7 +564,7 @@ def most_productive_reporter():
   '''
   Sample mongo shell query:
 
-  db.nyt_archives.aggregate([
+  db.archives.aggregate([
     {
       $match: {
         $and: [
@@ -772,7 +772,7 @@ def compare_news_keywords():
 
   cursor = db[__COLLECTION_NAME__].aggregate(phase1_query)
 
-  phase1_words = list(cursor) if cursor is not None else None
+  phase1_words = list(cursor) if cursor is not None else list()
 
   phase2_query = [
       {
@@ -805,7 +805,7 @@ def compare_news_keywords():
 
   cursor = db[__COLLECTION_NAME__].aggregate(phase2_query)
 
-  phase2_words = list(cursor) if cursor is not None else None
+  phase2_words = list(cursor) if cursor is not None else list()
 
   return (phase1_words, phase2_words)
 
@@ -894,7 +894,7 @@ def most_popular_news_keywords():
 
   cursor = db[__COLLECTION_NAME__].aggregate(query)
 
-  most_popular_keywords = list(cursor) if cursor is not None else None
+  most_popular_keywords = list(cursor) if cursor is not None else list()
 
   return most_popular_keywords
 
@@ -951,7 +951,7 @@ def xpage_articles(page_number=1):
 
   cursor = db[__COLLECTION_NAME__].find(query)
 
-  articles = list(cursor) if cursor is not None else None
+  articles = list(cursor) if cursor is not None else list()
 
   return articles
 
@@ -999,7 +999,9 @@ def longest_article():
   cursor = db[__COLLECTION_NAME__].find(
       query).sort(__WORD_COUNT__, DESCENDING).limit(1)
 
-  article = list(cursor)[0] if cursor is not None else None
+  article = list(cursor) if cursor is not None else list()
+
+  article = article[0] if len(article) > 0 else None
 
   return article
 
@@ -1072,7 +1074,7 @@ def search_people_or_organization(search_string, flag_person=False):
 
   cursor = db[__COLLECTION_NAME__].find(query)
 
-  articles = list(cursor) if cursor is not None else None
+  articles = list(cursor) if cursor is not None else list()
 
   return articles
 
@@ -1127,7 +1129,7 @@ def articles_between(begin_time, end_time):
 
   cursor = db[__COLLECTION_NAME__].find(query)
 
-  articles = list(cursor) if cursor is not None else None
+  articles = list(cursor) if cursor is not None else list()
 
   return articles
 
@@ -1154,38 +1156,30 @@ def most_organization():
 
   '''
   Sample mongo shell query:
-  db.month_4.aggregate([
-    {
-      $match: {
-        $and: [
-          {
-            'keywords.name': "organizations"
-          },
-          {
-            'keywords.value': {
-              $regex: /.+/
-            }
-          }
-        ]
-      }
-    },
-    {
-      $unwind: '$keywords'
-    },
-    {
-      $group: {
-        '_id': '$keywords.value',
-        'organization_count': {
-          $sum: 1
+  db.archives.aggregate([{
+        $unwind: '$keywords'
+    }, {
+        $match: {
+            $and: [{
+                'keywords.name': "organizations"
+            }, {
+                'keywords.value': {
+                    $regex: /.+/
+                }
+            }]
         }
-      }
-    },
-    {
-      $sort: {
-        'organization_count': -1
-      }
-    }
-  ])
+    }, {
+        $group: {
+            '_id': '$keywords.value',
+            'organization_count': {
+                $sum: 1
+            }
+        }
+    }, {
+        $sort: {
+            'organization_count': -1
+        }
+  }])
   '''
 
   query = [
@@ -1237,8 +1231,81 @@ def most_organization():
   return organization
 
 
+# Query#12: Find the section-name for which maximum number of articles written
+def most_section():
+  '''
+  most_section() -> dict
+
+  Query#12: Find the section-name for which maximum number of articles written
+
+  Input(s):
+    None
+
+  Output(s):
+    :return: section `dict` -- The section-name for which maximum number of articles written
+  '''
+
+  client = get_client()
+
+  db = client.get_database(__DATABASE_NAME__)
+
+  section = None
+
+  '''
+  Sample mongo shell query:
+  db.archives.aggregate([{
+    $match: {
+        "document_type": "article"
+    }
+  }, {
+    $group: {
+        '_id': '$section_name',
+        'section_count': {
+            $sum: 1
+        }
+    }
+  }, {
+    $sort: {
+        'section_count': -1
+    }
+  }])
+  '''
+
+  query = [
+      {
+          __MATCH__: {
+              '{document_type}'.format(
+                  document_type=__DOCUMENT_TYPE__): 'article'
+          }
+      },
+      {
+          __GROUP__: {
+              __ID_OP__: '${section_name}'.format(
+                  section_name=__SECTION_NAME__),
+              'section_count': {
+                  __SUM__: 1
+              }
+          }
+      },
+      {
+          __SORT__: {
+              'section_count': -1
+          }
+      }
+  ]
+
+  cursor = db[__COLLECTION_NAME__].aggregate(query)
+
+  section = list(cursor) if cursor is not None else list()
+
+  section = section[0] if len(section) > 0 else None
+
+  return section
+
+
 if __name__ == '__main__':
   basicConfig(format='%(asctime)s %(message)s')
   warning('Testing pymongo and mongo connections and queries...')
   # db = client.get_database('usdata')
-  # print('All the collections of `usdata` db : {}'.format(db.collection_names()))
+  # print('All the collections of `usdata` db :
+  # {}'.format(db.collection_names()))

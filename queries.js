@@ -2,7 +2,7 @@
  * @Author: Sidharth Mishra
  * @Date:   2017-05-03 21:54:40
  * @Last Modified by:   Sidharth Mishra
- * @Last Modified time: 2017-05-05 12:38:23
+ * @Last Modified time: 2017-05-05 13:36:18
  */
 
 'use strict';
@@ -204,5 +204,24 @@ db.month_4.aggregate([{
 }, {
     $sort: {
         'organization_count': -1
+    }
+}])
+
+
+//# 12
+db.archives.aggregate([{
+    $match: {
+        "document_type": "article"
+    }
+}, {
+    $group: {
+        '_id': '$section_name',
+        'section_count': {
+            $sum: 1
+        }
+    }
+}, {
+    $sort: {
+        'section_count': -1
     }
 }])
