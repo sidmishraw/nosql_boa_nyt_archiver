@@ -960,6 +960,75 @@ def longest_article():
 
   return article
 
+# Query#5. Find articles about specific people or organizations
+def search_people_or_organization(flag_person=False, search_string):
+  '''
+  search_people_or_organization(flag_person=False, search_string) -> pymongo.cursor.Cursor
+  
+  Query#5. Find articles about specific people or organizations
+  
+  Find the articles given name of person or an organization and then returns the cursor object which can be iterated upton to get the matching list of articles.
+      
+  The flag_person will determine if the query is about people(false) or organization(true)
+      
+  Input(s):
+  
+        :param: flag_person 'bool' -- The flag to determine whether the query is about people or not. -- defaults to false
+         
+        :param: search_string 'str' -- The name of the person or organization. -- no default
+  
+   Output(s):
+
+         :return: cursor 'pymongo.cursor.Cursor' -- The cursor instance that can be iterated upon when needed.
+  '''
+
+ client = get_client()
+
+ db = client.get_database(__DATABASE_NAME__)
+
+ ‘’'
+  Mongo shell sample query:
+
+ //#5 -- Organization
+  db.month_4.find({
+      “keywords”: {
+          $elemMatch: {
+              “name”: “organizations”,
+              “value”: {
+                  $regex: /.*MATTEL.*/i
+              }
+          }
+      }
+  })
+
+ //#5 -- People
+  db.month_4.find({
+      “keywords”: {
+          $elemMatch: {
+              “name”: “persons”,
+              “value”: {
+                  $regex: /.*CONDOLEEZZA.*/i
+              }
+          }
+      }
+  })
+  ‘’'
+
+ query = {
+      __KEYWORDS__: {
+          __ELEM_MATCH__: {
+              __KEYWORDS_NAME__: “organizations” if not flag_person else “persons”,
+              __KEYWORDS_VALUE__: {
+                  __REGEX__: re.compile(‘.*{pattern}.*‘.format(
+                      pattern=search_string), re.IGNORECASE)
+              }
+          }
+      }
+  }
+
+ cursor = db[__COLLECTION_NAME__].find(query)
+
+ return cursor
 
 if __name__ == '__main__':
   basicConfig(format='%(asctime)s %(message)s')
