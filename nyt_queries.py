@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 13:42:27
+# @Last Modified time: 2017-05-05 14:40:07
 
 
 '''
@@ -1301,6 +1301,125 @@ def most_section():
   section = section[0] if len(section) > 0 else None
 
   return section
+
+
+# Query#9. Find the number of original article from NYT (source)
+def count_original_articles():
+  '''
+  count_original_articles() -> int
+
+  Query#9. Find the number of original article from NYT (source)
+
+  Finds the number of the original articles from New York Times, i.e, the number of articles
+  with source as New York Times.
+
+  Input(s):
+
+    None
+
+  Output(s):
+
+    :return: org_articles_count `int` -- The number of original NYT articles
+  '''
+
+  client = get_client()
+
+  db = client.get_database(__DATABASE_NAME__)
+
+  '''
+  Mongo shell sample query:
+  db.archives.find({
+    "source": "The New York Times"
+  })
+  '''
+  query = {
+      __SOURCE__: "The New York Times"
+  }
+
+  cursor = db[__COLLECTION_NAME__].find(query)
+
+  org_articles_count = len(list(cursor)) if cursor is not None else 0
+
+  return org_articles_count
+
+
+# Query#14: Find which month had highest number of articles written
+def highest_articles_month():
+  '''
+  highest_articles_month() -> (str, int)
+
+  Query#14: Find which month had highest number of articles written
+
+  Finds the month with the maximum article count and returns the date as mm/yyyy and the count
+
+  Input(s):
+
+    None
+
+  Output(s):
+
+    :return: max_times `str` -- The date string in mm/yyyy format
+
+    :return: count `int` -- The count for the max articles
+  '''
+
+  client = get_client()
+
+  db = client.get_database(__DATABASE_NAME__)
+
+  '''
+  Sample mongo shell query:
+  db.month_4.aggregate([{
+    $match: {
+        "document_type": "article"
+    }
+  }, {
+    $group: {
+        _id: "$pub_date",
+        pub_count: {
+            $sum: 1
+        }
+    }
+  }, {
+    $sort: {
+        pub_count: -1
+    }
+  }])
+  '''
+  query = [
+      {
+          __MATCH__: {
+              __DOCUMENT_TYPE__: 'article'
+          }
+      },
+      {
+          __GROUP__: {
+              __ID_OP__: '${pub_date}'.format(
+                  pub_date=__PUB_DATE__),
+              'pub_count': {
+                  __SUM__: 1
+              }
+          }
+      },
+      {
+          __SORT__: {
+              'pub_count': -1
+          }
+      }
+  ]
+
+  cursor = db[__COLLECTION_NAME__].aggregate(query)
+
+  max_times = list(cursor) if cursor is not None else list()
+
+  max_times = max_times[0] if len(max_times) > 0 else None
+
+  if max_times is not None:
+    st = datetime.strptime(max_times[__ID__], '%Y-%m-%dT%H:%M:%SZ')
+    count = int(max_times['pub_count'])
+    max_times = '{month}/{year}'.format(month=st.month, year=st.year)
+
+  return max_times, count
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
  * @Author: Sidharth Mishra
  * @Date:   2017-05-03 21:54:40
  * @Last Modified by:   Sidharth Mishra
- * @Last Modified time: 2017-05-05 13:36:18
+ * @Last Modified time: 2017-05-05 14:35:28
  */
 
 'use strict';
@@ -223,5 +223,29 @@ db.archives.aggregate([{
 }, {
     $sort: {
         'section_count': -1
+    }
+}])
+
+
+//#9
+db.month_4.find({
+    "source": "The New York Times"
+})
+
+//#14
+db.month_4.aggregate([{
+    $match: {
+        "document_type": "article"
+    }
+}, {
+    $group: {
+        _id: "$pub_date",
+        pub_count: {
+            $sum: 1
+        }
+    }
+}, {
+    $sort: {
+        pub_count: -1
     }
 }])
