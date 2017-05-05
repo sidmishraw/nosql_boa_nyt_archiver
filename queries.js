@@ -2,7 +2,7 @@
  * @Author: Sidharth Mishra
  * @Date:   2017-05-03 21:54:40
  * @Last Modified by:   Sidharth Mishra
- * @Last Modified time: 2017-05-05 11:43:53
+ * @Last Modified time: 2017-05-05 12:38:23
  */
 
 'use strict';
@@ -180,3 +180,29 @@ db.month_4.find({
         "pub_date": { $lt: "2000-05-01" }
     }]
 })
+
+// # 11
+db.month_4.aggregate([{
+    $unwind: '$keywords'
+}, {
+    $match: {
+        $and: [{
+            'keywords.name': "organizations"
+        }, {
+            'keywords.value': {
+                $regex: /.+/
+            }
+        }]
+    }
+}, {
+    $group: {
+        '_id': '$keywords.value',
+        'organization_count': {
+            $sum: 1
+        }
+    }
+}, {
+    $sort: {
+        'organization_count': -1
+    }
+}])

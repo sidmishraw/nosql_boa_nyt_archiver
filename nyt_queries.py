@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 12:00:29
+# @Last Modified time: 2017-05-05 12:41:07
 
 
 '''
@@ -645,8 +645,10 @@ def most_productive_reporter():
 
   most_productive_reporter = None
 
-  if cursor is not None:
-    most_productive_reporter = next(cursor)
+  most_productive_reporter = list(cursor) if cursor is not None else list()
+
+  most_productive_reporter = most_productive_reporter[
+      0] if len(most_productive_reporter) > 0 else None
 
   return most_productive_reporter
 
@@ -1129,6 +1131,7 @@ def articles_between(begin_time, end_time):
 
   return articles
 
+
 # Query#11: Find the organization that appears the most in NYT
 def most_organization():
   '''
@@ -1151,12 +1154,12 @@ def most_organization():
 
   '''
   Sample mongo shell query:
-  db.nyt_archives.aggregate([
+  db.month_4.aggregate([
     {
       $match: {
         $and: [
           {
-            'keywords.name': "organization"
+            'keywords.name': "organizations"
           },
           {
             'keywords.value': {
@@ -1185,28 +1188,28 @@ def most_organization():
   ])
   '''
 
-   query = [
+  query = [
+      {
+          __UNWIND__: '${keywords}'.format(
+              keywords=__KEYWORDS__)
+      },
       {
           __MATCH__: {
               __AND__: [
                   {
                       '{keywords}.{name}'.format(
                           keywords=__KEYWORDS__,
-                          name=__KEYWORDS_NAME__): 'organization'
+                          name=__KEYWORDS_NAME__): 'organizations'
                   },
                   {
                       '{keywords}.{value}'.format(
                           keywords=__KEYWORDS__,
                           value=__KEYWORDS_VALUE__): {
-                          __REGEX__: '.+'
+                          __REGEX__: re.compile('.+', re.IGNORECASE)
                       }
                   }
               ]
           }
-      },
-      {
-          __UNWIND__: '${keywords}'.format(
-              keywords=__KEYWORDS__)
       },
       {
           __GROUP__: {
@@ -1227,10 +1230,12 @@ def most_organization():
 
   cursor = db[__COLLECTION_NAME__].aggregate(query)
 
-  if cursor is not None:
-    organization = next(cursor)
+  organization = list(cursor) if cursor is not None else list()
+
+  organization = organization[0] if len(organization) > 0 else None
 
   return organization
+
 
 if __name__ == '__main__':
   basicConfig(format='%(asctime)s %(message)s')
