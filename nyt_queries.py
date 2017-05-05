@@ -1,9 +1,9 @@
-# mongo_basic_demo1.py
+# nyt_queries.py
 # -*- coding: utf-8 -*-
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-04 14:50:39
+# @Last Modified time: 2017-05-05 11:15:11
 
 
 '''
@@ -105,6 +105,29 @@ __TYPE_OF_MATERIAL__ = 'type_of_material'
 __ID__ = '_id'
 __WORD_COUNT__ = 'word_count'
 __SLIDESHOW_CREDITS__ = 'slideshow_credits'
+
+
+# set database and collection names for the script from run-time
+# just for offerring more flexibility
+def set_db_collection_names(database_name=None, collection_name=None):
+  '''
+  Sets the db and collection names for the script
+  '''
+
+  global __DATABASE_NAME__, __COLLECTION_NAME__
+
+  if database_name is None or collection_name is None:
+    warning(
+        'Working with default database name: {db} and collection name: {collec}'.format(
+            db=__DATABASE_NAME__,
+            collec=__COLLECTION_NAME__))
+  else:
+    __DATABASE_NAME__ = database_name
+    __COLLECTION_NAME__ = collection_name
+    warning('Updated database name:{db} and collection name: {collec}'.format(
+        db=__DATABASE_NAME__, collec=__COLLECTION_NAME__))
+
+  return
 
 
 # Connection to MongoDB
@@ -960,61 +983,62 @@ def longest_article():
 
   return article
 
+
 # Query#5. Find articles about specific people or organizations
 def search_people_or_organization(flag_person=False, search_string):
   '''
   search_people_or_organization(flag_person=False, search_string) -> pymongo.cursor.Cursor
-  
+
   Query#5. Find articles about specific people or organizations
-  
+
   Find the articles given name of person or an organization and then returns the cursor object which can be iterated upton to get the matching list of articles.
-      
+
   The flag_person will determine if the query is about people(false) or organization(true)
-      
+
   Input(s):
-  
+
         :param: flag_person 'bool' -- The flag to determine whether the query is about people or not. -- defaults to false
-         
+
         :param: search_string 'str' -- The name of the person or organization. -- no default
-  
+
    Output(s):
 
          :return: cursor 'pymongo.cursor.Cursor' -- The cursor instance that can be iterated upon when needed.
   '''
 
- client = get_client()
+  client = get_client()
 
- db = client.get_database(__DATABASE_NAME__)
+  db = client.get_database(__DATABASE_NAME__)
 
- ‘’'
+  '''
   Mongo shell sample query:
 
- //#5 -- Organization
+  //#5 -- Organization
   db.month_4.find({
-      “keywords”: {
-          $elemMatch: {
-              “name”: “organizations”,
-              “value”: {
-                  $regex: /.*MATTEL.*/i
-              }
-          }
+    “keywords”: {
+      $elemMatch: {
+        “name”: “organizations”,
+        “value”: {
+          $regex: /.*MATTEL.*/i
+        }
       }
+    }
   })
 
- //#5 -- People
+  //#5 -- People
   db.month_4.find({
-      “keywords”: {
-          $elemMatch: {
-              “name”: “persons”,
-              “value”: {
-                  $regex: /.*CONDOLEEZZA.*/i
-              }
-          }
+    “keywords”: {
+      $elemMatch: {
+        “name”: “persons”,
+        “value”: {
+          $regex: /.*CONDOLEEZZA.*/i
+        }
       }
+    }
   })
-  ‘’'
+  '''
 
- query = {
+  query = {
       __KEYWORDS__: {
           __ELEM_MATCH__: {
               __KEYWORDS_NAME__: “organizations” if not flag_person else “persons”,
@@ -1026,9 +1050,42 @@ def search_people_or_organization(flag_person=False, search_string):
       }
   }
 
- cursor = db[__COLLECTION_NAME__].find(query)
+  cursor = db[__COLLECTION_NAME__].find(query)
 
- return cursor
+  return cursor
+
+
+# Query#10: Find the articles published in certain time range (date)
+def articles_between(begin_time, end_time):
+  '''
+  articles_between(begin_time, end_time) -> list[dict]
+
+  Finds the articles published between the `begin_time` and `end_time`.
+
+  Input(s):
+
+    :param: begin_time `datetime` -- The beginning of the time/date range
+
+    :param: end_time `datetime` -- The end of the time/date range
+
+  Output(s):
+
+    :return: articles `list[dict]` -- The list of all the article/documents that were published in
+    the given date range.
+  '''
+
+  client = get_client()
+
+  db = client.get_database(__DATABASE_NAME__)
+
+  query = None
+
+  cursor = db[__COLLECTION_NAME__].find(query)
+
+  articles = list(cursor)
+
+  return articles
+
 
 if __name__ == '__main__':
   basicConfig(format='%(asctime)s %(message)s')
