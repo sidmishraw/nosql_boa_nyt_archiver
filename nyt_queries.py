@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 22:26:55
+# @Last Modified time: 2017-05-05 22:38:53
 
 
 '''
@@ -1347,7 +1347,13 @@ def count_original_articles():
 
   cursor = db[__COLLECTION_NAME__].find(query)
 
-  org_articles_count = len(list(cursor)) if cursor is not None else 0
+  count = 0
+
+  while cursor is not None:
+    count += 1
+    cursor = cursor.next()
+
+  org_articles_count = count  # len(list(cursor)) if cursor is not None else 0
 
   return org_articles_count
 
