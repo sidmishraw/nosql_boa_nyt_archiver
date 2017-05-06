@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-05-05 10:52:40
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 17:37:41
+# @Last Modified time: 2017-05-05 17:38:53
 
 
 '''
@@ -320,7 +320,7 @@ if __name__ == '__main__':
       15. Find 10 most popular article in the given timeframe
       ''')
 
-    execute_query(query_index=query_index)
+    execute_query(query_index=int(query_index))
 
     consent = input('Query again? [Y/N]')
 
