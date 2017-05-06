@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-05-05 10:52:40
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 17:27:53
+# @Last Modified time: 2017-05-05 17:37:41
 
 
 '''
@@ -131,6 +131,8 @@ from pprint import pprint
 
 # NYT Archiver queries import
 from nyt_queries import *
+from nyt_queries import __DATABASE_NAME__
+from nyt_queries import __COLLECTION_NAME__
 
 
 def execute_query(*, query_index):
@@ -265,7 +267,7 @@ if __name__ == '__main__':
 
   client = get_client()
 
-  if database_name not in client.database_names():
+  if __DATABASE_NAME__ not in client.database_names():
     print('Need to create the dataset...')
     try:
       create_archives_dataset()
