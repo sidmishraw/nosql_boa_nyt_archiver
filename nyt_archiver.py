@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-05-05 10:52:40
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 17:38:53
+# @Last Modified time: 2017-05-05 22:29:15
 
 
 '''
@@ -257,13 +257,20 @@ if __name__ == '__main__':
   print('Starting NYT Archiver...')
 
   parser = ArgumentParser(description='NYT Archiver application')
+
+  parser.add_argument('-host', '--hostname')
+  parser.add_argument('-p', '--port')
   parser.add_argument('-db', '--database')
   parser.add_argument('-cl', '--collection')
+
   args = parser.parse_args()
-  database_name, collection_name = args.database, args.collection
+
+  database_name, collection_name, hostname, port = args.database, args.collection, \
+      args.hostname, args.port
 
   # set db name and collection names
-  set_db_collection_names(database_name, collection_name)
+  set_db_collection_names(
+      hostname=hostname, port=port, database_name=database_name, collection_name=collection_name)
 
   client = get_client()
 

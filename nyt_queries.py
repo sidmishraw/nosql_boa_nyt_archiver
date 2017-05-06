@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 17:30:37
+# @Last Modified time: 2017-05-05 22:26:55
 
 
 '''
@@ -113,23 +113,28 @@ __SLIDESHOW_CREDITS__ = 'slideshow_credits'
 
 # set database and collection names for the script from run-time
 # just for offerring more flexibility
-def set_db_collection_names(database_name=None, collection_name=None):
+def set_db_collection_names(
+        hostname=None, port=None, database_name=None, collection_name=None):
   '''
   Sets the db and collection names for the script
   '''
 
-  global __DATABASE_NAME__, __COLLECTION_NAME__
+  global __DATABASE_NAME__, __COLLECTION_NAME__, __HOSTNAME__, __PORT__
 
-  if database_name is None or collection_name is None:
+  if database_name is None or collection_name is None or hostname is None or port is None:
     warning(
-        'Working with default database name: {db} and collection name: {collec}'.format(
+        'Working with default database name: {db} and collection name: {collec} on {host}:{port}'.format(
             db=__DATABASE_NAME__,
-            collec=__COLLECTION_NAME__))
+            collec=__COLLECTION_NAME__,
+            host=__HOSTNAME__,
+            port=__PORT__))
   else:
     __DATABASE_NAME__ = database_name
     __COLLECTION_NAME__ = collection_name
-    warning('Updated database name:{db} and collection name: {collec}'.format(
-        db=__DATABASE_NAME__, collec=__COLLECTION_NAME__))
+    __HOSTNAME__ = hostname
+    __PORT__ = port
+    warning('Updated database name:{db} and collection name: {collec} and {host}:{port}'.format(
+        db=__DATABASE_NAME__, collec=__COLLECTION_NAME__, host=__HOSTNAME__, port=__PORT__))
 
   return
 
