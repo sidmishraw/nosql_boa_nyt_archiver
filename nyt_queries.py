@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 22:38:53
+# @Last Modified time: 2017-05-06 10:17:00
 
 
 '''
@@ -34,7 +34,7 @@ basicConfig(format='%(asctime)s %(message)s')
 # Time frame contants
 PHASE_1_START_YEAR = 2005
 PHASE_1_END_YEAR = 2007
-PHASE_2_START_YEAR = 2015
+PHASE_2_START_YEAR = 2014
 PHASE_2_END_YEAR = 2017
 
 
