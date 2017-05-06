@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-05-05 10:52:40
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 17:23:27
+# @Last Modified time: 2017-05-05 17:24:22
 
 
 '''
@@ -269,7 +269,7 @@ if __name__ == '__main__':
     print('Need to create the dataset...')
     try:
       create_archives_dataset()
-    except Error:
+    except Exception:
       warning('Failed to create dataset, check mongodb logs')
 
   consent = 'N'

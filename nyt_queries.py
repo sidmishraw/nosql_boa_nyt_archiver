@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 15:39:25
+# @Last Modified time: 2017-05-05 17:24:52
 
 
 '''
@@ -265,7 +265,7 @@ def create_archives_dataset():
     for month in months:
       try:
         __insert_documents__(client, year, month)
-      except Error:
+      except Exception:
         warning(
             'Failed inserting data for year:{year}, month:{month}'.format(
                 year=year, month=month))
@@ -278,7 +278,7 @@ def create_archives_dataset():
     for month in months:
       try:
         __insert_documents__(client, year, month)
-      except Error:
+      except Exception:
         warning(
             'Failed inserting data for year:{year}, month:{month}'.format(
                 year=year, month=month))
