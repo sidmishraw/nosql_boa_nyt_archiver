@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 17:24:52
+# @Last Modified time: 2017-05-05 17:27:41
 
 
 '''
@@ -265,10 +265,10 @@ def create_archives_dataset():
     for month in months:
       try:
         __insert_documents__(client, year, month)
-      except Exception:
+      except Exception as e:
         warning(
             'Failed inserting data for year:{year}, month:{month}'.format(
-                year=year, month=month))
+                year=year, month=month), e)
 
   warning('Completed data insertion for Phase 1: 2005 - 2007')
 
@@ -278,10 +278,10 @@ def create_archives_dataset():
     for month in months:
       try:
         __insert_documents__(client, year, month)
-      except Exception:
+      except Exception as e:
         warning(
             'Failed inserting data for year:{year}, month:{month}'.format(
-                year=year, month=month))
+                year=year, month=month), e)
 
   warning('Completed data insertion for Phase 1: 2015 - 2017')
 

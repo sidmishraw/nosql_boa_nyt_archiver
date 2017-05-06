@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-05-05 10:52:40
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 17:24:22
+# @Last Modified time: 2017-05-05 17:27:53
 
 
 '''
@@ -269,8 +269,8 @@ if __name__ == '__main__':
     print('Need to create the dataset...')
     try:
       create_archives_dataset()
-    except Exception:
-      warning('Failed to create dataset, check mongodb logs')
+    except Exception as e:
+      warning('Failed to create dataset, check mongodb logs', e)
 
   consent = 'N'
   consent = input('Query the dataset? [Y/N]')
