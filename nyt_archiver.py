@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-05-05 10:52:40
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 22:46:46
+# @Last Modified time: 2017-05-05 22:48:02
 
 
 '''
@@ -266,8 +266,8 @@ if __name__ == '__main__':
 
   args = parser.parse_args()
 
-  database_name, collection_name, hostname, port = args.database, args.collection, \
-      args.hostname, args.port
+  database_name, collection_name, hostname, port, force_create = args.database, args.collection, \
+      args.hostname, args.port, args.force
 
   # set db name and collection names
   set_db_collection_names(
