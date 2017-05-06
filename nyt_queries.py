@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 17:27:41
+# @Last Modified time: 2017-05-05 17:29:18
 
 
 '''
@@ -192,7 +192,7 @@ def invoke_archives_api(year=2000, month=4):
   json_string = None
 
   with urlopen(url_string) as archive_response:
-    json_string = archive_response.read()
+    json_string = str(archive_response.read(), encoding='utf-8')
 
   json_string = loads(json_string)
 
