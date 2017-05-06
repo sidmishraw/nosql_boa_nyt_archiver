@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-05-05 10:52:40
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 22:29:15
+# @Last Modified time: 2017-05-05 22:46:46
 
 
 '''
@@ -262,6 +262,7 @@ if __name__ == '__main__':
   parser.add_argument('-p', '--port')
   parser.add_argument('-db', '--database')
   parser.add_argument('-cl', '--collection')
+  parser.add_argument('-f', '--force', action='store_true')
 
   args = parser.parse_args()
 
@@ -274,7 +275,7 @@ if __name__ == '__main__':
 
   client = get_client()
 
-  if __DATABASE_NAME__ not in client.database_names():
+  if force_create or __DATABASE_NAME__ not in client.database_names():
     print('Need to create the dataset...')
     try:
       create_archives_dataset()
