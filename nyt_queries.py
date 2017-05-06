@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 17:29:18
+# @Last Modified time: 2017-05-05 17:30:37
 
 
 '''
@@ -197,7 +197,7 @@ def invoke_archives_api(year=2000, month=4):
   json_string = loads(json_string)
 
   return (json_string[__RESPONSE__][__ARCHIVES_DOC_KEY__],
-          json_string[__ARCHIVES_META_KEY__][__ARCHIVES_META_HITS_KEY__])
+          json_string[__RESPONSE__][__ARCHIVES_META_KEY__][__ARCHIVES_META_HITS_KEY__])
 
 
 # modularizing insertion of data into the mongo cluster
