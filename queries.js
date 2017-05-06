@@ -2,7 +2,7 @@
  * @Author: Sidharth Mishra
  * @Date:   2017-05-03 21:54:40
  * @Last Modified by:   Sidharth Mishra
- * @Last Modified time: 2017-05-05 15:05:46
+ * @Last Modified time: 2017-05-06 14:34:54
  */
 
 'use strict';
@@ -231,9 +231,18 @@ db.archives.aggregate([{
 
 
 //#9. Find the number of original article from NYT (source)
-db.month_4.find({
-    "source": "The New York Times"
-})
+db.archives.aggregate([{
+    $match: {
+        "source": "The New York Times"
+    }
+}, {
+    $group: {
+        _id: "$source",
+        orig_count: {
+            $sum: 1
+        }
+    }
+}])
 
 //#14. Find which month had highest number of articles written
 db.month_4.aggregate([{

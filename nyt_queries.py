@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-06 13:42:04
+# @Last Modified time: 2017-05-06 14:38:40
 
 
 '''
@@ -1337,23 +1337,38 @@ def count_original_articles():
 
   '''
   Mongo shell sample query:
-  db.archives.find({
-    "source": "The New York Times"
-  })
+  db.archives.aggregate([{
+    $match: {
+        "source": "The New York Times"
+    }
+  }, {
+    $group: {
+        _id: "$source",
+        orig_count: {
+            $sum: 1
+        }
+    }
+  }])
   '''
-  query = {
-      __SOURCE__: "The New York Times"
-  }
+  query = [
+      {
+          __MATCH__: {
+              __SOURCE__: "The New York Times"
+          }
+      },
+      {
+          __GROUP__: {
+              __ID_OP__: "${path}".format(path=__SOURCE__),
+              "orig_count": {
+                  __SUM__: 1
+              }
+          }
+      }
+  ]
 
-  cursor = db[__COLLECTION_NAME__].find(query)
+  cursor = db[__COLLECTION_NAME__].aggregate(query, allowDiskUse=True)
 
-  # count = 0
-
-  # while cursor is not None:
-  #   count += 1
-  #   cursor = cursor.next()
-
-  org_articles_count = len(list(cursor)) if cursor is not None else 0
+  org_articles_count = list(cursor) if cursor is not None else 0
 
   return org_articles_count
 
