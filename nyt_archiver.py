@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-05-05 10:52:40
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-05 16:20:49
+# @Last Modified time: 2017-05-05 17:23:27
 
 
 '''
@@ -265,7 +265,7 @@ if __name__ == '__main__':
 
   client = get_client()
 
-  if __DATABASE_NAME__ not in client.database_names():
+  if database_name not in client.database_names():
     print('Need to create the dataset...')
     try:
       create_archives_dataset()
