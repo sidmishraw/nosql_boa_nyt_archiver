@@ -3,7 +3,7 @@
 # @Author: Sidharth Mishra
 # @Date:   2017-03-15 12:36:16
 # @Last Modified by:   Sidharth Mishra
-# @Last Modified time: 2017-05-06 10:17:00
+# @Last Modified time: 2017-05-06 12:48:56
 
 
 '''
@@ -538,7 +538,7 @@ def list_articles_type_of_materials():
       }
   ]
 
-  cursor = db[__COLLECTION_NAME__].aggregate(pipeline_query)
+  cursor = db[__COLLECTION_NAME__].aggregate(pipeline_query, allowDiskUse=True)
 
   articles = list(cursor) if cursor is not None else list()
 
@@ -650,7 +650,7 @@ def most_productive_reporter():
       }
   ]
 
-  cursor = db[__COLLECTION_NAME__].aggregate(pipeline_query)
+  cursor = db[__COLLECTION_NAME__].aggregate(pipeline_query, allowDiskUse=True)
 
   most_productive_reporter = None
 
@@ -779,7 +779,7 @@ def compare_news_keywords():
       }
   ]
 
-  cursor = db[__COLLECTION_NAME__].aggregate(phase1_query)
+  cursor = db[__COLLECTION_NAME__].aggregate(phase1_query, allowDiskUse=True)
 
   phase1_words = list(cursor) if cursor is not None else list()
 
@@ -812,7 +812,7 @@ def compare_news_keywords():
       }
   ]
 
-  cursor = db[__COLLECTION_NAME__].aggregate(phase2_query)
+  cursor = db[__COLLECTION_NAME__].aggregate(phase2_query, allowDiskUse=True)
 
   phase2_words = list(cursor) if cursor is not None else list()
 
@@ -901,7 +901,7 @@ def most_popular_news_keywords():
       }
   ]
 
-  cursor = db[__COLLECTION_NAME__].aggregate(query)
+  cursor = db[__COLLECTION_NAME__].aggregate(query, allowDiskUse=True)
 
   most_popular_keywords = list(cursor) if cursor is not None else list()
 
@@ -1231,7 +1231,7 @@ def most_organization():
       }
   ]
 
-  cursor = db[__COLLECTION_NAME__].aggregate(query)
+  cursor = db[__COLLECTION_NAME__].aggregate(query, allowDiskUse=True)
 
   organization = list(cursor) if cursor is not None else list()
 
@@ -1303,7 +1303,7 @@ def most_section():
       }
   ]
 
-  cursor = db[__COLLECTION_NAME__].aggregate(query)
+  cursor = db[__COLLECTION_NAME__].aggregate(query, allowDiskUse=True)
 
   section = list(cursor) if cursor is not None else list()
 
@@ -1423,7 +1423,7 @@ def highest_articles_month():
       }
   ]
 
-  cursor = db[__COLLECTION_NAME__].aggregate(query)
+  cursor = db[__COLLECTION_NAME__].aggregate(query, allowDiskUse=True)
 
   max_times = list(cursor) if cursor is not None else list()
 
