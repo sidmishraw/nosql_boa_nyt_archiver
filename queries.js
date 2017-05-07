@@ -2,7 +2,7 @@
  * @Author: Sidharth Mishra
  * @Date:   2017-05-03 21:54:40
  * @Last Modified by:   Sidharth Mishra
- * @Last Modified time: 2017-05-06 14:34:54
+ * @Last Modified time: 2017-05-06 17:47:30
  */
 
 'use strict';
@@ -14,7 +14,7 @@ use archives_2000
 // queries for trial stuff
 
 // #3. Search for articles based on user entry.
-db.month_4.find({
+db.archives.find({
     $and: [{
         "document_type": "article"
     }, {
@@ -38,7 +38,7 @@ db.month_4.find({
 
 // #4. Find articles by reporter name.
 
-db.month_4.find({
+db.archives.find({
     $and: [{
         "byline.person": {
             $elemMatch: {
@@ -57,7 +57,7 @@ db.month_4.find({
 // #5. Find articles about specific people or organizations. For eg - 
 // search forarticles about Leonardo Dicaprio etc.
 //#5 -- Organization
-db.month_4.find({
+db.archives.find({
     "keywords": {
         $elemMatch: {
             "name": "organizations",
@@ -69,7 +69,7 @@ db.month_4.find({
 })
 
 //#5 -- People
-db.month_4.find({
+db.archives.find({
     "keywords": {
         $elemMatch: {
             "name": "persons",
@@ -82,7 +82,7 @@ db.month_4.find({
 
 
 //#2. Find the most popular news keywords from the entire archives collection.
-db.month_4.aggregate([{
+db.archives.aggregate([{
     $match: {
         "type_of_material": "News"
     }
@@ -108,7 +108,7 @@ db.month_4.aggregate([{
 // # 1. Compare the top news keywords for the years 2015-2017 and 2005-2007 tosee what the news 
 // has been about. (Basically try and find the difference thathas come about in last 10 years.)
 // for year 2005-2007 -- top 10 keywords a.k.a tags
-db.month_4.aggregate([{
+db.archives.aggregate([{
     $match: {
         "pub_date": {
             $regex: /200[5-7].*/i
@@ -132,7 +132,7 @@ db.month_4.aggregate([{
 }])
 
 // for year 2015 - 2017 -- top 10 keywords a.k.a tags
-db.month_4.aggregate([{
+db.archives.aggregate([{
     $match: {
         "pub_date": {
             $regex: /201[5-7].*/i
@@ -157,7 +157,7 @@ db.month_4.aggregate([{
 
 
 // #6. Find the articles that have occured on page# x over these years.
-db.month_4.find({
+db.archives.find({
     $and: [{
         "print_page": "90"
     }, {
@@ -167,7 +167,7 @@ db.month_4.find({
 
 
 // #8. Find the longest article (page or word count)
-db.month_4.find({
+db.archives.find({
     "document_type": "article"
 }).sort({
     "word_count": -1
@@ -176,7 +176,7 @@ db.month_4.find({
 
 
 // #10. Find the articles published in certain time range (date)
-db.month_4.find({
+db.archives.find({
     $and: [{
         "pub_date": { $gt: "2000-04-01" }
     }, {
@@ -185,7 +185,7 @@ db.month_4.find({
 })
 
 // #11. Find the organization that appears the most in NYT (organization)
-db.month_4.aggregate([{
+db.archives.aggregate([{
     $unwind: '$keywords'
 }, {
     $match: {
@@ -245,7 +245,7 @@ db.archives.aggregate([{
 }])
 
 //#14. Find which month had highest number of articles written
-db.month_4.aggregate([{
+db.archives.aggregate([{
     $match: {
         "document_type": "article"
     }
@@ -263,7 +263,7 @@ db.month_4.aggregate([{
 }])
 
 // #15. Find 10 most popular article in the given timeframe
-db.month_4.find({
+db.archives.find({
     $and: [{
         "pub_date": {
             $gt: "2000-04-01"
