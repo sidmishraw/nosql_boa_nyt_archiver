@@ -2,7 +2,7 @@
  * @Author: Sidharth Mishra
  * @Date:   2017-05-03 21:54:40
  * @Last Modified by:   Sidharth Mishra
- * @Last Modified time: 2017-05-06 17:47:30
+ * @Last Modified time: 2017-05-06 17:53:53
  */
 
 'use strict';
@@ -37,6 +37,20 @@ db.archives.find({
 
 
 // #4. Find articles by reporter name.
+
+db.archives.find({
+    $and: [{
+        'byline.person.firstname': 'Constance'
+    }, {
+        'byline.person.middlename': 'L.'
+    }, {
+        'byline.person.lastname': 'HAYS'
+    }, {
+        'byline.person.role': 'reported'
+    }, {
+        'document_type': 'article'
+    }]
+})
 
 db.archives.find({
     $and: [{
